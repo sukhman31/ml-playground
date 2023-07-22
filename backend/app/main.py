@@ -2,9 +2,26 @@ from fastapi import FastAPI
 from db.database import create_supabase_client
 from app.models import User
 import bcrypt
+from fastapi.middleware.cors import CORSMiddleware
 
 supabase = create_supabase_client()
 app = FastAPI()
+
+
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 def user_exists(key: str = 'email_id', value: str = None):
      user = supabase.table('Users').select('*').eq(key,value).execute()
@@ -13,7 +30,9 @@ def user_exists(key: str = 'email_id', value: str = None):
 
 @app.get("/")
 def root():
-     return {"Hello": "World"}
+     data,count = supabase.table('Users').select('username').execute()
+     print(data)
+     return data
 
 @app.post('/user')
 def create_user(user: User):
